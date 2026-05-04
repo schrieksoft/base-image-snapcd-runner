@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+
+    outputs:
+      version: ${{ steps.gitversion.outputs.SemVer }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Needed for GitVersion
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.1.11
+      with:
+        versionSpec: 5.x
+
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v3.1.11
+      id: gitversion
+      with:
+        useConfigFile: true
+        configFilePath: gitversion.yaml
+
+    - name: Display GitVersion outputs
+      run: |
+        echo "Version: ${{ steps.gitversion.outputs.SemVer }}"
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for Docker (base)
+      id: meta-base
+      uses: docker/metadata-action@v5
+      with:
+        images: "ghcr.io/schrieksoft/base-image-snapcd-runner"
+
+    - name: Extract metadata for Docker (azure)
+      id: meta-azure
+      uses: docker/metadata-action@v5
+      with:
+        images: "ghcr.io/schrieksoft/base-image-snapcd-runner"
+
+    - name: Build and push base image (plain)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile
+        push: true
+        tags: "ghcr.io/schrieksoft/base-image-snapcd-runner:${{ steps.gitversion.outputs.SemVer }}"
+        labels: ${{ steps.meta-base.outputs.labels }}
+
+    - name: Build and push base image (azure)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile.azure
+        push: true
+        tags: "ghcr.io/schrieksoft/base-image-snapcd-runner:${{ steps.gitversion.outputs.SemVer }}-azure"
+        labels: ${{ steps.meta-azure.outputs.labels }}
