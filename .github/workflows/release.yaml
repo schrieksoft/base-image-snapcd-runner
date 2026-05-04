@@ -17,7 +17,7 @@ jobs:
       version: ${{ steps.gitversion.outputs.SemVer }}
 
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -77,3 +77,14 @@ jobs:
         push: true
         tags: "ghcr.io/schrieksoft/base-image-snapcd-runner:${{ steps.gitversion.outputs.SemVer }}-azure"
         labels: ${{ steps.meta-azure.outputs.labels }}
+
+    - name: Create GitHub release
+      if: github.ref == 'refs/heads/main'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEMVER: ${{ steps.gitversion.outputs.SemVer }}
+      run: |
+        gh release create "v${SEMVER}" \
+          --title "v${SEMVER}" \
+          --target "${GITHUB_SHA}" \
+          --generate-notes
