@@ -5,10 +5,16 @@ prerequisites the Runner needs at runtime onto `mcr.microsoft.com/dotnet/aspnet:
 so the application Dockerfiles in `snapcd/SnapCd.Runner/` can be a thin
 `FROM <base> + COPY app + ENTRYPOINT`.
 
-| Variant      | Dockerfile         | Adds                                                         | Published as                                                         |
-|--------------|--------------------|--------------------------------------------------------------|----------------------------------------------------------------------|
-| Plain        | `Dockerfile`       | `git`, `openssh-client`, `wget`, `curl`                      | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>`              |
-| Azure        | `Dockerfile.azure` | the above + Azure CLI (`az`) via `aka.ms/InstallAzureCLIDeb` | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>-azure`        |
+| Variant      | Dockerfile         | Adds                                                                                              | Published as                                                         |
+|--------------|--------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| Plain        | `Dockerfile`       | `git`, `openssh-client`, `wget`, `curl`, `unzip`, `ca-certificates`, `tofu`, `terraform`          | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>`              |
+| Azure        | `Dockerfile.azure` | the above + Azure CLI (`az`) via `aka.ms/InstallAzureCLIDeb`                                      | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>-azure`        |
+
+`tofu` is pinned to the latest OpenTofu release at the time of the bump
+(`TOFU_VERSION` ARG in both Dockerfiles); `terraform` is pinned to `1.5.7`
+(`TERRAFORM_VERSION` ARG). Both downloads are SHA256-verified against the
+matching `*_SHA256` ARGs. Bump versions and checksums together in a single
+commit.
 
 Versions are computed by GitVersion (`gitversion.yaml`) and published by
 `.github/workflows/release.yaml` on every push to `main` and on `workflow_dispatch`.
@@ -29,10 +35,10 @@ Verify the tools are present:
 
 ```bash
 docker run --rm base-image-snapcd-runner:local \
-    sh -c "git --version && ssh -V && wget --version | head -1 && curl --version | head -1"
+    sh -c "git --version && ssh -V && wget --version | head -1 && curl --version | head -1 && tofu version && terraform version"
 
 docker run --rm base-image-snapcd-runner:local-azure \
-    sh -c "git --version && az --version | head -1"
+    sh -c "git --version && az --version | head -1 && tofu version && terraform version"
 ```
 
 ### Trying it as the Runner's base
