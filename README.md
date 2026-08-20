@@ -7,14 +7,16 @@ so the application Dockerfiles in `snapcd/SnapCd.Runner/` can be a thin
 
 | Variant      | Dockerfile         | Adds                                                                                              | Published as                                                         |
 |--------------|--------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| Plain        | `Dockerfile`       | `git`, `openssh-client`, `wget`, `curl`, `unzip`, `ca-certificates`, `tofu`, `terraform`          | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>`              |
+| Plain        | `Dockerfile`       | `git`, `openssh-client`, `wget`, `curl`, `unzip`, `ca-certificates`, `python3`, `tofu`, `terraform`, `conftest`, `demonolith` | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>`              |
 | Azure        | `Dockerfile.azure` | the above + Azure CLI (`az`) via `aka.ms/InstallAzureCLIDeb`                                      | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>-azure`        |
 
 `tofu` is pinned to the latest OpenTofu release at the time of the bump
 (`TOFU_VERSION` ARG in both Dockerfiles); `terraform` is pinned to `1.5.7`
-(`TERRAFORM_VERSION` ARG). Both downloads are SHA256-verified against the
-matching `*_SHA256` ARGs. Bump versions and checksums together in a single
-commit.
+(`TERRAFORM_VERSION` ARG). `conftest` evaluates the Rego policies behind Policy
+as Code; `demonolith` performs the carve and state migration behind SplitMonolith
+manual jobs. Every download is SHA256-verified against the matching `*_SHA256`
+ARG. Bump versions and checksums together in a single commit — the published
+`*_SHA256SUMS` asset on each release carries the value to use.
 
 Versions are computed by GitVersion (`gitversion.yaml`) and published by
 `.github/workflows/release.yaml` on every push to `main` and on `workflow_dispatch`.
@@ -35,10 +37,10 @@ Verify the tools are present:
 
 ```bash
 docker run --rm base-image-snapcd-runner:local \
-    sh -c "git --version && ssh -V && wget --version | head -1 && curl --version | head -1 && tofu version && terraform version"
+    sh -c "git --version && ssh -V && wget --version | head -1 && curl --version | head -1 && tofu version && terraform version && conftest --version && demonolith --version"
 
 docker run --rm base-image-snapcd-runner:local-azure \
-    sh -c "git --version && az --version | head -1 && tofu version && terraform version"
+    sh -c "git --version && az --version | head -1 && tofu version && terraform version && conftest --version && demonolith --version"
 ```
 
 ### Trying it as the Runner's base
