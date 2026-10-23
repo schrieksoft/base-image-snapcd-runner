@@ -8,7 +8,7 @@ so the application Dockerfiles in `snapcd/SnapCd.Runner/` can be a thin
 | Variant      | Dockerfile         | Adds                                                                                              | Published as                                                         |
 |--------------|--------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
 | Plain        | `Dockerfile`       | `git`, `openssh-client`, `wget`, `curl`, `unzip`, `ca-certificates`, `python3`, `tofu`, `terraform`, `conftest`, `demonolith` | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>`              |
-| Azure        | `Dockerfile.azure` | the above + Azure CLI (`az`) via `aka.ms/InstallAzureCLIDeb`                                      | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>-azure`        |
+| Azure        | `Dockerfile.azure` | the above + Azure CLI (`az`) via `aka.ms/InstallAzureCLIDeb`, `kubelogin`                         | `ghcr.io/schrieksoft/base-image-snapcd-runner:<SemVer>-azure`        |
 
 `tofu` is pinned to the latest OpenTofu release at the time of the bump
 (`TOFU_VERSION` ARG in both Dockerfiles); `terraform` is pinned to `1.5.7`

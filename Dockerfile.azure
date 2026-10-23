@@ -8,11 +8,20 @@ ARG DEMONOLITH_VERSION=0.8.0
 ARG DEMONOLITH_SHA256=78ac2331436d956ce3fe2b295b28c753fb1b041d964e0460cb6c3f3469fcd340
 ARG CONFTEST_VERSION=0.68.2
 ARG CONFTEST_SHA256=e8144c6d6d2ae0260b869caa60c7c262a1f95ac63ec1e5d2fb19be452d606347
+ARG KUBELOGIN_VERSION=0.2.21
+ARG KUBELOGIN_SHA256=934a2a9618e018cb9fbeb14f3e4c28416fdae815df7706df91500e41d234eb66
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git openssh-client wget curl unzip ca-certificates python3 python3-venv python3-pip && \
     curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
     rm -rf /var/lib/apt/lists/*
+
+# kubelogin is the client-go credential plugin for AKS clusters with Microsoft Entra ID authentication.
+RUN curl -fsSL -o /tmp/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/v${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip" && \
+    echo "${KUBELOGIN_SHA256}  /tmp/kubelogin.zip" | sha256sum -c - && \
+    unzip -j /tmp/kubelogin.zip bin/linux_amd64/kubelogin -d /usr/local/bin && \
+    chmod +x /usr/local/bin/kubelogin && \
+    rm /tmp/kubelogin.zip
 
 RUN curl -fsSL -o /tmp/tofu.zip "https://github.com/opentofu/opentofu/releases/download/v${TOFU_VERSION}/tofu_${TOFU_VERSION}_linux_amd64.zip" && \
     echo "${TOFU_SHA256}  /tmp/tofu.zip" | sha256sum -c - && \
